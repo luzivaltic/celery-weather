@@ -8,9 +8,36 @@ services:
       - celery-net
 
   celery-worker:
+    container_name: celery_worker
     build: .
+    command: celery -A celery_worker.app worker --loglevel=info
+    volumes:
+      - .:/app
     depends_on:
       - redis-server
+    networks:
+      - celery-net
+  
+  celery-beat:
+    container_name: celery_beat 
+    build: .
+    command: celery -A celery_worker.app beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - celery-worker
+    networks:
+      - celery-net
+
+  celery_flower:
+    container_name: flower
+    command: celery -A celery_worker.app flower --port=5555
+    build: .
+    ports:
+      - "5556:5555"
+    depends_on:
+      - redis-server
+      - celery-worker
     networks:
       - celery-net
 
