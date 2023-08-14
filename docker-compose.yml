@@ -4,9 +4,7 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
-    networks:
-      - celery-net
-
+  
   celery-worker:
     container_name: celery_worker
     build: .
@@ -15,8 +13,6 @@ services:
       - .:/app
     depends_on:
       - redis-server
-    networks:
-      - celery-net
   
   celery-beat:
     container_name: celery_beat 
@@ -26,20 +22,14 @@ services:
       - .:/app
     depends_on:
       - celery-worker
-    networks:
-      - celery-net
 
   celery_flower:
     container_name: flower
-    command: celery -A celery_worker.app flower --port=5555
     build: .
+    command: celery -A celery_worker.app flower
     ports:
       - "5556:5555"
     depends_on:
       - redis-server
       - celery-worker
-    networks:
-      - celery-net
 
-networks:
-  celery-net:
